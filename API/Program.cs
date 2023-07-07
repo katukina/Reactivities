@@ -1,3 +1,4 @@
+using API.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Persistence;
 
@@ -6,20 +7,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-//KP This was added manually after added DataContext class in Persistence
-builder.Services.AddDbContext<DataContext>(opt => {
-   opt.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection"));
-});
-//KP Srvice needed to add whcih contains Cors policy to let me access the api from react
-builder.Services.AddCors(opt => {
-    opt.AddPolicy("CorsPolicy", policy => {
-        //KP Alow any http method
-        policy.AllowAnyMethod().AllowAnyHeader().WithOrigins("http://localhost:3000"); //This has to match where the request is coming, our React app
-    });
-});
+builder.Services.AddApplicationServices(builder.Configuration);
 
 var app = builder.Build();
 
