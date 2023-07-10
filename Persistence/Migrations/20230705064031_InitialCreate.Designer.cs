@@ -26,6 +26,9 @@ namespace Persistence.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("Category")
+                        .HasColumnType("text");                        
+
                     b.Property<string>("City")
                         .HasColumnType("TEXT");
 
