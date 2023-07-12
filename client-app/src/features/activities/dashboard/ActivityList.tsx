@@ -1,46 +1,25 @@
-import { Button, Item, Label, Segment } from "semantic-ui-react";
-import { SyntheticEvent, useState } from "react";
+import { Header } from "semantic-ui-react";
 import { useStore } from "../../../app/stores/store";
 import { observer } from "mobx-react-lite";
-import { Link } from "react-router-dom";
+import ActivityListItem from "./ActivityListItem";
+import { Fragment } from "react";
 
 export default observer(function ActivityList() {
-
     const {activityStore} = useStore();
-    const {deleteActivity, activitiesByDate, loading} = activityStore;
-
-    const [target, setTarget] = useState('');
-
-    function handleActivityDelete(clickEvent: SyntheticEvent<HTMLButtonElement>, id: string) {
-        setTarget(clickEvent.currentTarget.name);
-        deleteActivity(id);
-    }  
+    const {groupedActivities} = activityStore;
 
     return (
-        <Segment>
-            <Item.Group divided>
-                {activitiesByDate.map(activity => (
-                    <Item key={activity.id}>
-                        <Item.Content>
-                            <Item.Header as='a'>{activity.title}</Item.Header>
-                            <Item.Meta>{activity.date}</Item.Meta>
-                            <Item.Description>
-                                <div>{activity.description}</div>
-                                <div>{activity.city}, {activity.venue}</div>
-                            </Item.Description>
-                            <Item.Extra>
-                                <Button as={Link} to={`/activities/${activity.id}`} floated='right' content='view' color="blue"></Button>
-                                <Button 
-                                    name={activity.id} //each button has as a name uniquename that is the id
-                                    loading={loading && target === activity.id} //ensure that only the clicked button show the loading
-                                    onClick={(clickEvent) => handleActivityDelete(clickEvent, activity.id)} 
-                                    floated='right' content='delete' color="red"></Button>
-                                <Label basic content={activity.category}></Label>
-                            </Item.Extra>
-                        </Item.Content>
-                    </Item>
+        <>
+            {groupedActivities.map(([group, activities]) => (
+                <Fragment key={group}>
+                    <Header sub color='teal'>
+                        {group}
+                    </Header>
+                    {activities && activities.map(activity => (
+                        <ActivityListItem key={activity.id} activity={activity} />
                     ))}
-            </Item.Group>
-        </Segment>
+                </Fragment>
+            ))}
+        </>
     )
 })
