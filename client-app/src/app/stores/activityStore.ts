@@ -16,11 +16,11 @@ export default class ActivityStore {
 
     //This was similar that it was App.tsx in useEffect to reduce code there
     loadActivities = async () => {
+        this.setLoadingInitial(true);
         try {
-            const activities = await agent.Activities.list();
+            const activities = await agent.Activities.list();            
             activities.forEach(activity => {
-                activity.date = activity.date.split('T')[0];
-                this.activityMap.set(activity.id, activity); // filling the map
+                this.setActivity(activity);
             })
             this.setLoadingInitial(false);
         } catch (error) {
@@ -29,26 +29,42 @@ export default class ActivityStore {
         }
     }
 
+    private setActivity = (activity: Activity) => {
+        activity.date = activity.date.split('T')[0];
+        this.activityMap.set(activity.id, activity);
+        runInAction(() => this.selectedActivity = activity);
+    }
+
+    private getActivity = (id: string) => {
+        return this.activityMap.get(id);
+    }
+
+    //If we have in memory we used it else from API using agent
+    loadActivity = async (id: string) => {
+        let activity = this.getActivity(id);
+        if (activity) {
+            this.selectedActivity = activity;
+            return activity;
+        }
+        else {
+            this.setLoadingInitial(true);
+            try {
+                activity = await agent.Activities.details(id);
+                this.setActivity(activity);
+                this.setLoadingInitial(false);
+                return activity;
+            } catch (error) {
+                console.log(error);
+                this.setLoadingInitial(false);
+            }
+        }
+    }
+
     setLoadingInitial = (state: boolean) => {
         this.loadingInitial = state;
     }
 
-    selectActivity = (id: string) => {
-        this.selectedActivity = this.activityMap.get(id);
-    }
-
-    cancelActivity = () => {
-        this.selectedActivity = undefined;
-    }
-
-    openForm = (id?: string) => {
-        id ? this.selectActivity(id) : this.cancelActivity();
-        this.editMode = true;
-    }
-    
-    closeForm  = () => {
-        this.editMode = false;
-    }
+    //methods including select activity not needed(deleted) and also because there is routing available
 
     createActivity = async (activity: Activity) => {
         this.loading = true;

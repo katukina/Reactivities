@@ -2,6 +2,7 @@ import { Button, Item, Label, Segment } from "semantic-ui-react";
 import { SyntheticEvent, useState } from "react";
 import { useStore } from "../../../app/stores/store";
 import { observer } from "mobx-react-lite";
+import { Link } from "react-router-dom";
 
 export default observer(function ActivityList() {
 
@@ -28,7 +29,7 @@ export default observer(function ActivityList() {
                                 <div>{activity.city}, {activity.venue}</div>
                             </Item.Description>
                             <Item.Extra>
-                                <Button onClick={() => activityStore.selectActivity(activity.id)} floated='right' content='view' color="blue"></Button>
+                                <Button as={Link} to={`/activities/${activity.id}`} floated='right' content='view' color="blue"></Button>
                                 <Button 
                                     name={activity.id} //each button has as a name uniquename that is the id
                                     loading={loading && target === activity.id} //ensure that only the clicked button show the loading
