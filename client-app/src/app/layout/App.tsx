@@ -3,6 +3,7 @@ import { Container } from 'semantic-ui-react';
 import { observer } from 'mobx-react-lite';
 import { Outlet, useLocation } from 'react-router-dom';
 import HomePage from '../../features/home/HomePage';
+import { ToastContainer } from 'react-toastify';
 
 function App() {
   const location = useLocation();
@@ -10,6 +11,7 @@ function App() {
   //router outlets is used when we do load a routes, this get swapped with the actual component that we are loading
   return (
     <>
+    <ToastContainer position='bottom-right' hideProgressBar theme='colored' />
     {location.pathname === '/' ? <HomePage /> : (
       <>
         <NavBar />
