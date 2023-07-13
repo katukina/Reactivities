@@ -2,16 +2,25 @@ using AutoMapper;
 using Domain;
 using MediatR;
 using Persistence;
+using FluentValidation;
+using Application.Core;
 
 namespace Application.Activities
 {
     public class Edit
     {
-        public class Commnad : IRequest
+         public class Command : IRequest<Result<Unit>>
         {   
             public Activity Activity { get; set; }
         }
-        public class Handler : IRequestHandler<Commnad>
+        public class CommandValidator : AbstractValidator<Command>
+        {
+            public CommandValidator()
+            {
+                RuleFor(x => x.Activity).SetValidator(new ActivityValidator());
+            }
+        }
+        public class Handler : IRequestHandler<Command, Result<Unit>>
         {                
             private readonly DataContext _context;
             private readonly IMapper _mapper;
@@ -20,13 +29,15 @@ namespace Application.Activities
                 _mapper = mapper;
                 _context = context;
             }
-            public async Task<Unit> Handle(Commnad request, CancellationToken cancellationToken)
+            public async Task<Result<Unit>> Handle(Command request, CancellationToken cancellationToken)            
             {
                 var activity = await _context.Activities.FindAsync(request.Activity.Id);
+                if (activity == null) return null;
                 //Updating a single property can be activity.Title = request.Activity.Title ?? activity.Title; //but we need all the object
                 _mapper.Map(request.Activity, activity);              
-                await _context.SaveChangesAsync();
-                return Unit.Value; //Leting API controller in our case ActivitiesController that this has finished
+                var result = await _context.SaveChangesAsync() > 0;
+                if (!result) return Result<Unit>.Failure("Failed to update activity");
+                return Result<Unit>.Success(Unit.Value); //Leting API controller in our case ActivitiesController that this has finished
             }
         }
     }
