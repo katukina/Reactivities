@@ -20,7 +20,6 @@ namespace API.Extensions
             //Allows us to query our users in the Entity Framework store or our DB
             .AddEntityFrameworkStores<DataContext>();
 
-            services.AddAuthentication();
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(config["TokenKey"]));
 
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
