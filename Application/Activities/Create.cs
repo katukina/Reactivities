@@ -3,6 +3,8 @@ using FluentValidation;
 using MediatR;
 using Persistence;
 using Application.Core;
+using Application.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
 namespace Application.Activities
 {
@@ -24,12 +26,26 @@ namespace Application.Activities
         public class Handler : IRequestHandler<Commnad, Result<Unit>>
         {                
             private readonly DataContext _context;
-            public Handler(DataContext context)
+            private readonly IUserAccessor _userAccessor;
+            public Handler(DataContext context, IUserAccessor userAccessor)
             {
+                _userAccessor = userAccessor;
                 _context = context;                
             }
             public async Task<Result<Unit>> Handle(Commnad request, CancellationToken cancellationToken)
             {
+                var user = await _context.Users.FirstOrDefaultAsync(x => 
+                    x.UserName == _userAccessor.GetUsername());
+
+                var attendee = new ActivityAttendee
+                {
+                    AppUser = user,
+                    Activity = request.Activity,
+                    IsHost = true
+                };
+
+                request.Activity.Attendees.Add(attendee);    
+                            
                 _context.Activities.Add(request.Activity); // Adding the activty in memory
                 var result = await _context.SaveChangesAsync() > 0;
 

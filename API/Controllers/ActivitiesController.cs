@@ -4,8 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers
-{
-    [AllowAnonymous]
+{    
     public class ActivitiesController : BaseApiController
     {
         //From first implementation is going to be removed  injecting our data insde this controled
@@ -32,6 +31,7 @@ namespace API.Controllers
             return HandleResult(await Mediator.Send(new Create.Commnad{Activity = activity}));
         }
         
+        [Authorize(Policy = "IsActivityHost")]
         [HttpPut("{id}")] //Used for updating resources
         //we dont need any result then we get access to IActionResult like ok, bad request, not found 
         public async Task<IActionResult> EditActivity(Guid id, Activity activity)
@@ -40,11 +40,18 @@ namespace API.Controllers
             return HandleResult(await Mediator.Send(new Edit.Command{Activity = activity}));
         }
 
+        [Authorize(Policy = "IsActivityHost")]
         [HttpDelete("{id}")] //Used for updating resources
         //we dont need any result then we get access to IActionResult like ok, bad request, not found 
         public async Task<IActionResult> DeleteActivity(Guid id)
         {
             return HandleResult(await Mediator.Send(new Delete.Command{Id = id}));
+        }
+
+        [HttpPost("{id}/attend")]
+        public async Task<IActionResult> Attend(Guid id)
+        {
+            return HandleResult(await Mediator.Send(new UpdateAttendance.Command{Id = id}));
         }
     }
 }
