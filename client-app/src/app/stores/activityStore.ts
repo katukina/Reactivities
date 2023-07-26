@@ -1,8 +1,10 @@
 import { makeAutoObservable, runInAction } from "mobx";
-import { Activity  } from "../models/activity";
+import { Activity, ActivityFormValues  } from "../models/activity";
 import agent from "../api/agent";
 import { v4 as uuid } from 'uuid';
 import { format } from 'date-fns';
+import { store } from "./store";
+import { Profile } from "../models/profile";
 
 export default class ActivityStore {
     activityMap = new Map<string, Activity>();
@@ -31,6 +33,14 @@ export default class ActivityStore {
     }
 
     private setActivity = (activity: Activity) => {
+        const user = store.userStore.user;
+        if (user) {
+            activity.isGoing = activity.attendees!.some(
+                a => a.username === user.username
+            );
+            activity.isHost = activity.hostUsername === user.username;
+            activity.host = activity.attendees?.find(x => x.username === activity.hostUsername);
+        }        
         activity.date = new Date(activity.date!);
         this.activityMap.set(activity.id, activity);    }
 
@@ -64,37 +74,37 @@ export default class ActivityStore {
     }
 
     //methods including select activity not needed(deleted) and also because there is routing available
-
-    createActivity = async (activity: Activity) => {
-        this.loading = true;
-        activity.id = uuid();
+    createActivity = async (activity: ActivityFormValues) => {
+        const user = store.userStore!.user;
+        const profile = new Profile(user!)
         try {
             await agent.Activities.create(activity);
-            runInAction(() => {
-                this.activityMap.set(activity.id, activity);
-                this.selectedActivity = activity;
-                this.editMode = false;
-                this.loading = false;
-            })
+            //set the other properties that are also needed
+            const newActivity = new Activity(activity);
+            newActivity.hostUsername = user!.username;
+            newActivity.attendees = [profile];
+            this.setActivity(newActivity);
+            runInAction(() => this.selectedActivity = newActivity);
         } catch (error) {
             console.log(error);
-            runInAction(() => this.loading = false);
         }
     }
 
-    updateActivity = async (activity: Activity) => {
-        this.loading = true;
+    updateActivity = async (activity: ActivityFormValues) => {
         try {
-            await agent.Activities.update(activity)
+            await agent.Activities.update(activity);
             runInAction(() => {
-                this.activityMap.set(activity.id, activity);
-                this.selectedActivity = activity;
-                this.editMode = false;
-                this.loading = false;
+                if (activity.id) {
+                    //combine updatedActivity, the ActivityFormValues that has been updated but also get the original info for activity with missing properties
+                    //spread operator permite combinar varios objetos o arrays en uno solo. Es especialmente útil para combinar las propiedades de varios objetos en uno nuevo.
+                    //first is the original and second is activity of ActivityFormValues
+                    let updatedActivity = {...this.getActivity(activity.id), ...activity };
+                    this.activityMap.set(activity.id, updatedActivity as Activity);
+                    this.selectedActivity = updatedActivity as Activity;
+                }
             })
         } catch (error) {
             console.log(error);
-            runInAction(() => this.loading = false);
         }
     }
 
@@ -112,7 +122,53 @@ export default class ActivityStore {
                 this.loading = false;
             })
         }
+
+        
     }
+
+    //Is made in same button cancel/Join activity in ActivityDetailHeader.tsx
+    updateAttendeance = async () => {
+        const user = store.userStore.user;
+        this.loading = true;
+        try {
+            //Update API call attend methond in agents
+            await agent.Activities.attend(this.selectedActivity!.id);
+            runInAction(() => {
+                //remove if already is the activity if not create a new object of profile type and add to the list
+                if (this.selectedActivity?.isGoing) {
+                    this.selectedActivity.attendees = this.selectedActivity.attendees?.filter(a => a.username !== user?.username);
+                    this.selectedActivity.isGoing = false;
+                } else {
+                    const attendee = new Profile(user!);
+                    this.selectedActivity?.attendees?.push(attendee);
+                    this.selectedActivity!.isGoing = true;
+                }
+                this.activityMap.set(this.selectedActivity!.id, this.selectedActivity!);
+            })
+        } catch (error) {
+            console.log(error);
+        } finally {
+            runInAction(() => this.loading = false);
+        }
+    }
+
+    //Is made in same button 'Re-activate activity' : 'Cancel Activity' button in ActivityDetailHeader.tsx
+    cancelActivityToggle = async () => {
+        this.loading = true;
+        try {
+            //attend methond in agents
+            await agent.Activities.attend(this.selectedActivity!.id);
+            runInAction(() => {
+                //Set the oposite of what is already set
+                this.selectedActivity!.isCancelled = !this.selectedActivity!.isCancelled;
+                this.activityMap.set(this.selectedActivity!.id, this.selectedActivity!);
+            })
+        } catch (error) {
+            console.log(error);
+        } finally {
+            runInAction(() => this.loading = false);
+        }
+    }    
     
     get activitiesByDate() {
         return Array.from(this.activityMap.values()).sort((a, b) =>
