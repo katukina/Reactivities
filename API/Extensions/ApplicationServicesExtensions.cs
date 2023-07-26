@@ -7,6 +7,7 @@ using Infrastructure.Security;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Persistence;
+using Infrastructure.Photos;
 
 namespace API.Extensions
 {
@@ -36,6 +37,9 @@ namespace API.Extensions
             services.AddHttpContextAccessor();
             //This will make this available to be injected inside our application handlers
             services.AddScoped<IUserAccessor, UserAccessor>();
+            services.AddScoped<IPhotoAccessor, PhotoAccessor>();
+            //this has to match with appsettings.json
+            services.Configure<CloudinarySettingsConfig>(config.GetSection("Cloudinary"));
             return services;
         }        
     }

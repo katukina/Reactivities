@@ -11,8 +11,9 @@ namespace Persistence
         }
 
         public DbSet<Activity> Activities { get; set; } //Activities is going to be the table name when it is created
-
         public DbSet<ActivityAttendee> ActivityAttendees { get; set; }
+        public DbSet<Photo> Photos { get; set; }
+
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
