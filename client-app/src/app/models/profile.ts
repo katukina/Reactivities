@@ -5,6 +5,7 @@ export interface Profile {
     displayName: string;
     image?: string;
     bio?: string;
+    photos?: Photo[]
 }
 
 //class used in activityStore to set the values
@@ -14,4 +15,10 @@ export class Profile implements Profile {
         this.displayName = user.displayName;
         this.image = user.image
     }
+}
+
+export interface Photo {
+    id: string;
+    url: string;
+    isMain: boolean;
 }
