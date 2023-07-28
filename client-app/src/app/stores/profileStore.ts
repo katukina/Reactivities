@@ -39,6 +39,26 @@ export default class ProfileStore {
         }
     }
 
+    editProfile = async (profile: Partial<Profile>) => {
+        this.loading = true;
+        try {
+            await agent.Profiles.editProfile(profile);
+            runInAction(() => {
+                if (profile.displayName && profile.displayName !== store.userStore.user?.displayName){
+                    store.userStore.setDisplayName(profile.displayName);
+                }
+                let updatedProfile = {...this.profile, ...profile }; 
+                this.profile = updatedProfile as Profile;
+                this.loading = false;
+            })
+            
+        } catch (error) {
+            console.log(error);
+            runInAction(() => this.loading = false);
+        }
+
+    }
+
     uploadPhoto = async (file: any) => {
         this.uploading = true;
         try {
@@ -98,4 +118,6 @@ export default class ProfileStore {
             this.loading = false;
         }
     }
+
+    
 }

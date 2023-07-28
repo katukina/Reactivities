@@ -14,7 +14,7 @@ export default observer(function ProfileCard({profile}: Props) {
             <Card.Content>
                 <Card.Header>{profile.displayName}</Card.Header>
                 <Card.Description>
-                    Bio goes here
+                {profile.bio}
                 </Card.Description>
             </Card.Content>
             <Card.Content extra>
