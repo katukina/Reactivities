@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Identity;
 using Domain;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Authorization;
+using API.SignalR;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -36,6 +37,8 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+//New hub and the route that we are going to direct user to when they connet to our chat hub
+app.MapHub<ChatHub>("/chat");
 
 //KP Create DB Get access to DataContext service
 //"using" should be added to automatically cleans up when finished with the code

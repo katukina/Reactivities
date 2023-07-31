@@ -184,5 +184,9 @@ export default class ActivityStore {
             }, {} as {[key: string]: Activity[]})
         )
     }    
+
+    clearSelectedActivity = () => {
+        this.selectedActivity = undefined;
+    }    
 }
 

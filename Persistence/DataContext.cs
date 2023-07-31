@@ -13,6 +13,7 @@ namespace Persistence
         public DbSet<Activity> Activities { get; set; } //Activities is going to be the table name when it is created
         public DbSet<ActivityAttendee> ActivityAttendees { get; set; }
         public DbSet<Photo> Photos { get; set; }
+        public DbSet<Comment> Comments { get; set; }
 
 
         protected override void OnModelCreating(ModelBuilder builder)
@@ -30,6 +31,14 @@ namespace Persistence
                 .HasOne(u => u.Activity)
                 .WithMany(u => u.Attendees)
                 .HasForeignKey(aa => aa.ActivityId);
+
+            //How to set up that if an activity is deleted also the comments are deleted 
+            //but for user will not do it to keep comments from that user in the activity even it doesn't exist
+            builder.Entity<Comment>()
+                .HasOne(a => a.Activity)
+                .WithMany(c => c.Comments)
+                .OnDelete(DeleteBehavior.Cascade);                
+
         }
     }
 }

@@ -26,7 +26,11 @@ namespace API.Extensions
             services.AddCors(opt => {
                 opt.AddPolicy("CorsPolicy", policy => {
                     //KP Alow any http method
-                    policy.AllowAnyMethod().AllowAnyHeader().WithOrigins("http://localhost:3000"); //This has to match where the request is coming, our React app
+                    policy
+                    .AllowAnyMethod()
+                    .AllowAnyHeader()
+                    .AllowCredentials()
+                    .WithOrigins("http://localhost:3000"); //This has to match where the request is coming, our React app
                 });
             });
             //KP SErive registered and need to find out wher are our handlers because we are adding this service in API project
@@ -40,6 +44,7 @@ namespace API.Extensions
             services.AddScoped<IPhotoAccessor, PhotoAccessor>();
             //this has to match with appsettings.json
             services.Configure<CloudinarySettingsConfig>(config.GetSection("Cloudinary"));
+            services.AddSignalR();
             return services;
         }        
     }
