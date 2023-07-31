@@ -1,11 +1,15 @@
 import { User } from "./user";
 
+//Correspond with Application/Profiles/Profile.cs
 export interface Profile {
     username: string;
     displayName: string;
     image?: string;
     bio?: string;
-    photos?: Photo[]
+    photos?: Photo[]    
+    followersCount: number;
+    followingCount: number;
+    following: boolean;
 }
 
 //class used in activityStore to set the values

@@ -1,5 +1,6 @@
 //Query handler to retrieve list of activities
 using Application.Core;
+using Application.Interfaces;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using MediatR;
@@ -16,9 +17,11 @@ namespace Application.Activities
         {
             private readonly DataContext _context;
             private readonly IMapper _mapper;
+            private readonly IUserAccessor _userAccessor;
 
-            public Handler(DataContext context, IMapper mapper)
+            public Handler(DataContext context, IMapper mapper, IUserAccessor userAccessor)
             {
+                _userAccessor = userAccessor;
                  _mapper = mapper;
                 _context = context;                
             }
@@ -26,8 +29,8 @@ namespace Application.Activities
             {
                 var activities = await _context.Activities
                 //Could be added here hand code by using Select function from System.Linq and do it manually but mapper should be easy
-                    .ProjectTo<ActivityDto>(_mapper.ConfigurationProvider)
-                    .ToListAsync(cancellationToken);
+                    .ProjectTo<ActivityDto>(_mapper.ConfigurationProvider, new{currentUsername = _userAccessor.GetUsername()})
+                    .ToListAsync();
 
                 return Result<List<ActivityDto>>.Success(activities);
             }

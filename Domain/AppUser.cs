@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Identity;
+using static Domain.UserFollowings;
 
 namespace Domain
 {
@@ -10,5 +11,9 @@ namespace Domain
         public ICollection<ActivityAttendee> Activities { get; set; }
         //user can have many photos
         public ICollection<Photo> Photos { get; set; }
+        //Current user following
+        public ICollection<UserFollowing> Followings { get; set; }
+        //Who is following the current logged user
+        public ICollection<UserFollowing> Followers { get; set; }
     }
 }

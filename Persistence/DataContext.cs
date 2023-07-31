@@ -1,6 +1,7 @@
 using Domain;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using static Domain.UserFollowings;
 
 namespace Persistence
 {
@@ -10,12 +11,14 @@ namespace Persistence
         {
         }
 
+        //All the tables of our database
         public DbSet<Activity> Activities { get; set; } //Activities is going to be the table name when it is created
         public DbSet<ActivityAttendee> ActivityAttendees { get; set; }
         public DbSet<Photo> Photos { get; set; }
         public DbSet<Comment> Comments { get; set; }
+        public DbSet<UserFollowing> UserFollowings { get; set; }
 
-
+        //Creation the relation beteween tables
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
@@ -37,7 +40,20 @@ namespace Persistence
             builder.Entity<Comment>()
                 .HasOne(a => a.Activity)
                 .WithMany(c => c.Comments)
-                .OnDelete(DeleteBehavior.Cascade);                
+                .OnDelete(DeleteBehavior.Cascade);     
+
+            builder.Entity<UserFollowing>(b =>
+            {
+                b.HasKey(k => new { k.ObserverId, k.TargetId });
+                b.HasOne(o => o.Observer)
+                    .WithMany(f => f.Followings)
+                    .HasForeignKey(o => o.ObserverId)
+                    .OnDelete(DeleteBehavior.Cascade);
+                b.HasOne(t => t.Target)
+                    .WithMany(f => f.Followers)
+                    .HasForeignKey(t => t.TargetId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });                           
 
         }
     }
