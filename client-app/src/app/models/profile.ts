@@ -26,3 +26,10 @@ export interface Photo {
     url: string;
     isMain: boolean;
 }
+
+export interface userActivity {
+    id: string;
+    title: string;
+    category: string;
+    date: Date | null;
+}

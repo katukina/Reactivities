@@ -12,9 +12,10 @@ namespace API.Controllers
   
         //Create two endpoints
         [HttpGet] //api/activities
-        public async Task<IActionResult> GetActivities()
+        public async Task<IActionResult> GetActivities([FromQuery] ActivityParams param)
         {
-            return HandleResult(await Mediator.Send(new List.Query()));   
+            //return HandleResult(await Mediator.Send(new List.Query()));   
+            return HandlePagedResult(await Mediator.Send(new List.Query { Params = param })); //pagination new method in BaseApiController
         }       
 
         [HttpGet("{id}")] //api/activities/fdfjhdjh used Id  

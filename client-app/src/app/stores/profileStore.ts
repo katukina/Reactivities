@@ -1,4 +1,4 @@
-import {Photo, Profile} from "../models/profile";
+import {Photo, Profile, userActivity} from "../models/profile";
 import {makeAutoObservable, reaction, runInAction} from "mobx";
 import agent from "../api/agent";
 import {toast} from "react-toastify";
@@ -12,6 +12,8 @@ export default class ProfileStore {
     followings: Profile[] = [];
     loadingFollowings = false;
     activeTab: number = 0;    
+    activityList: userActivity[] = [];
+    loadingActivities = false;
 
     //To make observable and propoerties are automatically flagges as observables
     constructor() {
@@ -38,6 +40,23 @@ export default class ProfileStore {
             return store.userStore.user.username === this.profile.username;
         }
         return false;
+    }
+
+    //Added a method to get the activities calling agent.ts
+    loadUserActivities = async (username: string, predicate?: string) => {
+        this.loadingActivities = true;
+        try {            
+            const activities = await agent.Profiles.getActivities(username, predicate!);
+            runInAction(() => {
+                this.activityList = activities;
+                this.loadingActivities = false;
+            })
+        } catch (error) {
+            toast.error('Problem loading user activities');
+            runInAction(() => {
+                this.loadingProfile = false;
+            })            
+        }
     }
 
     loadProfile = async (username: string) => {

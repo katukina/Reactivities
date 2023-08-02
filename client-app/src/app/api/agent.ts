@@ -4,7 +4,15 @@ import { toast } from 'react-toastify';
 import { router } from '../router/Routes';
 import { store } from '../stores/store';
 import { User, UserFormValues } from '../models/user';
-import { Photo, Profile } from '../models/profile';
+import { Photo, Profile, userActivity } from '../models/profile';
+import { PaginatedResult } from '../models/pagination';
+
+
+const sleep = (delay: number) => {
+    return new Promise((resolve) => {
+        setTimeout(resolve, delay);
+    })
+}
 
 axios.defaults.baseURL ='http://localhost:5000/api';
 //Type parameters , generic type ofor our response body T woule be subtitute for activity array
@@ -16,7 +24,14 @@ axios.interceptors.request.use(config => {
     return config;
 })
 
+//Our response is going to have a pagaination header
 axios.interceptors.response.use(async response => {
+    await sleep(1000)
+    const pagination = response.headers['pagination'];
+    if (pagination) {
+        response.data = new PaginatedResult(response.data, JSON.parse(pagination));
+        return response as AxiosResponse<PaginatedResult<any>>
+    }
     return response;
 }, (error: AxiosError) => {
     const {data, status, config} = error.response as AxiosResponse;
@@ -64,7 +79,10 @@ const requests = {
 
 //Create an object is going to store the requests
 const Activities = {
-    list: () => requests.get<Activity[]>('/activities'),
+    //list: () => requests.get<Activity[]>('/activities'),
+    //instead of ussing request we're going to need to pass as and object to put method
+    list: (params: URLSearchParams) => axios.get<PaginatedResult<Activity[]>>('/activities', { params })
+    .then(responseBody),
     details: (id: string) => requests.get<Activity>(`/activities/${id}`),
     create: (activity: ActivityFormValues) => requests.post<void>('/activities', activity),
     update: (activity: ActivityFormValues) => requests.put<void>(`/activities/${activity.id}`, activity),
@@ -94,7 +112,11 @@ const Profiles = {
     editProfile: (profile: Partial<Profile>)  => requests.put<void>(`/profiles`, profile),    
     updateFollowing: (username: string) => requests.post(`/follow/${username}`, {}),
     listFollowings: (username: string, predicate: string) => requests
-        .get<Profile[]>(`/follow/${username}?predicate=${predicate}`)    
+        .get<Profile[]>(`/follow/${username}?predicate=${predicate}`),
+    //Coming from API\Controllers\ProfilesController.cs to get activities bases on user name & predicate  
+    //Added userActivity interface in profile.ts that matches the properties we return in this object from the API, Application\Profiles\UserActivityDto.cs
+    getActivities:  (username: string, predicate: string) => requests    
+    .get<userActivity[]>(`/profiles/${username}/activities/?predicate=${predicate}`),
 }
 
 const agent = {
