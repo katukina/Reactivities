@@ -13,8 +13,10 @@ const sleep = (delay: number) => {
         setTimeout(resolve, delay);
     })
 }
+//hard code as string, get from some kind of variable and also we ant to check if were running in production mode ir in devevelopent mode.
+//axios.defaults.baseURL ='http://localhost:5000/api'; Sustituir por las variables de enviroment en todos los lugares usados
+axios.defaults.baseURL = process.env.REACT_APP_API_URL;
 
-axios.defaults.baseURL ='http://localhost:5000/api';
 //Type parameters , generic type ofor our response body T woule be subtitute for activity array
 const responseBody = <T> (response: AxiosResponse<T>) => response.data;
 
@@ -26,7 +28,7 @@ axios.interceptors.request.use(config => {
 
 //Our response is going to have a pagaination header
 axios.interceptors.response.use(async response => {
-    await sleep(1000)
+    if (process.env.NODE_ENV === 'development') await sleep(1000);
     const pagination = response.headers['pagination'];
     if (pagination) {
         response.data = new PaginatedResult(response.data, JSON.parse(pagination));
@@ -96,6 +98,7 @@ const Account = {
     register: (user: UserFormValues) => requests.post<User>('/account/register', user)
 }
 
+//requests in the profiles object
 const Profiles = {
     get: (username: string) => requests.get<Profile>(`/profiles/${username}`),
     uploadPhoto: (file: any) => {

@@ -43,6 +43,7 @@ export default class ProfileStore {
     }
 
     //Added a method to get the activities calling agent.ts
+    //Predicate is optional as API return future activities Application\Profiles\ListActivities.cs the else case if not predicate is sent
     loadUserActivities = async (username: string, predicate?: string) => {
         this.loadingActivities = true;
         try {            

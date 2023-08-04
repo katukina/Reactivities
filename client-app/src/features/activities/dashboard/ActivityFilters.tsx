@@ -30,7 +30,6 @@ export default observer(function ActivityFilters() {
             <Calendar
                 onChange={(date: any) => setPredicate('startDate', date as Date)}
             />
-            <Calendar />
         </>
     );
 })

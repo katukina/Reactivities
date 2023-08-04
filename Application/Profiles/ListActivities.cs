@@ -30,7 +30,7 @@ namespace Application.Profiles
                 var query = _context.ActivityAttendees
                     .Where(x => x.AppUser.UserName == request.Username)
                     .OrderBy(d => d.Activity.Date)
-                    .ProjectTo<UserActivityDto>(_mapper.ConfigurationProvider)
+                    .ProjectTo<UserActivityDto>(_mapper.ConfigurationProvider) // To get from ActivityAttendees to UserActivityDto needs to add a mapper Application\Core\MappingProfiles.cs
                     .AsQueryable();
 
                 var today = DateTime.Now.Date;

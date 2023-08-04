@@ -16,7 +16,7 @@ export default class CommentStore {
             this.hubConnection = new HubConnectionBuilder()
             //Our chat endpoint, be carefull with (activityId) spelling as we are suing the string as the key and needs to match with the server
             //Next pass the token
-                .withUrl('http://localhost:5000/chat?activityId=' + activityId, {
+                .withUrl(process.env.REACT_APP_CHAT_URL + '?activityId=' + activityId, {
                     accessTokenFactory: () => store.userStore.user?.token!
                 })
                 //Reconnect to client char hub if connection lose
@@ -32,7 +32,7 @@ export default class CommentStore {
                 runInAction(() => {
                     comments.forEach(comment => {
                         //Make date Javascript date
-                        comment.createdAt = new Date(comment.createdAt + 'Z');
+                        comment.createdAt = new Date(comment.createdAt);
                     });
                     this.comments = comments;
                 });

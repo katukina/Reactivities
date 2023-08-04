@@ -36,9 +36,15 @@ app.UseCors("CorsPolicy");
 app.UseAuthentication();
 app.UseAuthorization();
 
+//After building the client end and wwwroot folder is created with the needed content
+app.UseDefaultFiles();
+app.UseStaticFiles();
+
 app.MapControllers();
 //New hub and the route that we are going to direct user to when they connet to our chat hub
 app.MapHub<ChatHub>("/chat");
+//From API\Controllers\FallbackController.cs Firt parameter action Index inside that file, second the controller
+app.MapFallbackToController("Index", "Fallback");
 
 //KP Create DB Get access to DataContext service
 //"using" should be added to automatically cleans up when finished with the code
