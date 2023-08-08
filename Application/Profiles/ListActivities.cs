@@ -33,7 +33,7 @@ namespace Application.Profiles
                     .ProjectTo<UserActivityDto>(_mapper.ConfigurationProvider) // To get from ActivityAttendees to UserActivityDto needs to add a mapper Application\Core\MappingProfiles.cs
                     .AsQueryable();
 
-                var today = DateTime.Now.Date;
+                var today = DateTime.UtcNow;
 
                 //Using a predicate past query the activities in past
                 if (request.Predicate == "past") 

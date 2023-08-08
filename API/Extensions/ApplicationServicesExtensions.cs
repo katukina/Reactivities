@@ -22,6 +22,7 @@ namespace API.Extensions
             services.AddDbContext<DataContext>(options => {
                var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
                 string connStr;
+
                 // Depending on if in development or production, use either FlyIO
                 // connection string, or development connection string from env var.
                 if (env == "Development")
@@ -33,6 +34,7 @@ namespace API.Extensions
                 {
                     // Use connection string provided at runtime by Flyio.
                     var connUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
+
                     // Parse connection URL to connection string for Npgsql
                     connUrl = connUrl.Replace("postgres://", string.Empty);
                     var pgUserPass = connUrl.Split("@")[0];
@@ -43,12 +45,14 @@ namespace API.Extensions
                     var pgPass = pgUserPass.Split(":")[1];
                     var pgHost = pgHostPort.Split(":")[0];
                     var pgPort = pgHostPort.Split(":")[1];
-                    connStr = $"Server={pgHost};Port={pgPort};User Id={pgUser};Password={pgPass};Database={pgDb};";
+                    var updatedHost = pgHost.Replace("flycast", "internal");
+
+                    connStr = $"Server={updatedHost};Port={pgPort};User Id={pgUser};Password={pgPass};Database={pgDb};";
                 }
                 // Whether the connection string came from the local development configuration file
                 // or from the environment variable from FlyIO, use it to set up your DbContext.
                 options.UseNpgsql(connStr);
-            }); 
+            });  
             //KP Srvice needed to add whcih contains Cors policy to let me access the api from react
             services.AddCors(opt => {
                 opt.AddPolicy("CorsPolicy", policy => {
