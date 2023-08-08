@@ -31,11 +31,37 @@ builder.Services.AddIdentityServices(builder.Configuration);
 var app = builder.Build();
 
 app.UseMiddleware<ExceptionMiddleware>();
+
+app.UseXContentTypeOptions(); // prevent mime sniffing of the content type
+app.UseReferrerPolicy(opt => opt.NoReferrer());
+app.UseXXssProtection(opt => opt.EnabledWithBlockMode()); // add a cross-site scripting protection header
+app.UseXfo(opt => opt.Deny()); //Prevent our app being used inside an iframe whic proctects against that click jacking
+// app.UseCspReportOnly can be used first to check the problems when inspect
+//Next one main defense against cross-site scripting attacks
+app.UseCsp(opt => opt
+    .BlockAllMixedContent() //force our app to load only HTTP content
+    //All of this content is allowed to be served from what we are running
+    .StyleSources(s => s.Self().CustomSources("https://fonts.googleapis.com"))
+    .FontSources(s => s.Self().CustomSources("https://fonts.gstatic.com", "data:")) //data for the domain that console was was showing
+    .FormActions(s => s.Self())
+    .FrameAncestors(s => s.Self())
+    .ImageSources(s => s.Self().CustomSources("blob:", "https://res.cloudinary.com"))
+    .ScriptSources(s => s.Self())
+);
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
+}
+else 
+{
+    app.Use(async (context, next) => 
+    {
+        context.Response.Headers.Add("Strict-Transport-Security", "max-age=31536000");
+        await next.Invoke();
+    });
 }
 
 //KP Before autorization use the one we have created
